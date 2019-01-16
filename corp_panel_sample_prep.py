@@ -15,14 +15,14 @@ import pandas as pd
 import numpy as np
 
 # Get full panel data
-data_full = pd.read_excel('ITR6_2013_2015_PANEL_MERGE_SHORT_SAMPLE1.xlsx',
-                          sheet_name='ITR6_2013_2015_PANEL_MERGE_SHOR')
+data_full = pd.read_excel('ITR6_2017_2013_PANEL_new.xlsx',
+                          sheet_name='ITR6_2017_2013_PANEL_new')
 
 # Rename some variables
 renames = {'SHORT_TERM_15PER': 'ST_CG_AMT_1', 'SHORT_TERM_30PER': 'ST_CG_AMT_2',
            'LONG_TERM_10PER': 'LT_CG_AMT_1', 'LONG_TERM_20PER': 'LT_CG_AMT_2',
            'SHORT_TERM_APPRATE': 'ST_CG_AMT_APPRATE',
-           'TOTAL_INCOME_ALL':'GTI_BEFORE_LOSSES'}
+           'TOTAL_INCOME_ALL':'GTI_BEFORE_LOSSES', 'PAN_NO_HASH': 'ID_NO'}
 data_full = data_full.rename(renames, axis=1)
 data_full = data_full.fillna(0)
 
@@ -34,7 +34,7 @@ count = len(data13)
 varlist = ['INCOME_HP', 'PRFT_GAIN_BP_OTHR_SPECLTV_BUS',
            'PRFT_GAIN_BP_SPECLTV_BUS', 'PRFT_GAIN_BP_SPCFD_BUS',
            'PRFT_GAIN_BP_INC_115BBF', 'ST_CG_AMT_1', 'ST_CG_AMT_2',
-           'LT_CG_AMT_1', 'LT_CG_AMT_2']
+           'LT_CG_AMT_1', 'LT_CG_AMT_2', 'AGGREGATE_LIABILITY']
 # Average amounts for various measures
 agg_results = {'no_returns': 781141.,
                'INCOME_HP': 134403176952 / 790443.,
@@ -53,7 +53,10 @@ blowup_results = {}
 
 for var in varlist:
     sample_results[var] = 1.0 * sum(data13[var]) / count
-    blowup_results[var] = agg_results[var] / sample_results[var]
+    if sample_results[var] != 0:
+        blowup_results[var] = agg_results[var] / sample_results[var]
+    else:
+        blowup_results[var] = 1.0
 
 # Produce weights for each observation in 2013
 WT2013 = np.array([agg_results['no_returns'] / sample_results['no_returns']] *
