@@ -116,10 +116,11 @@ count = len(data13)
 varlist = ['INCOME_HP', 'PRFT_GAIN_BP_OTHR_SPECLTV_BUS',
            'PRFT_GAIN_BP_SPECLTV_BUS', 'PRFT_GAIN_BP_SPCFD_BUS',
            #'PRFT_GAIN_BP_INC_115BBF',
-           'ST_CG_AMT_1', 'ST_CG_AMT_2',
-           'LT_CG_AMT_1', 'LT_CG_AMT_2', 'AGGREGATE_LIABILTY']
+           'ST_CG_AMT_1', 'ST_CG_AMT_2', 'ST_CG_AMT_APPRATE', 'LT_CG_AMT_1',
+           'LT_CG_AMT_2', 'TOTAL_INCOME_OS', 'CYL_SET_OFF', 'TOTAL_DEDUC_VIA', 
+           'DEDUCT_SEC_10A_OR_10AA', 'NET_AGRC_INCOME', 'AGGREGATE_LIABILTY']
 # Average amounts for various measures
-agg_results = {'no_returns': 781141.,
+agg_results = {'no_returns': 543310.,
                'INCOME_HP': 134403176952 / 790443.,
                'PRFT_GAIN_BP_OTHR_SPECLTV_BUS': 11650386829465 / 783662.,
                'PRFT_GAIN_BP_SPECLTV_BUS': 2850073821 / 783662.,
@@ -129,6 +130,12 @@ agg_results = {'no_returns': 781141.,
                'ST_CG_AMT_2': 4641554226 / 781141.,
                'LT_CG_AMT_1': 250513034751 / 781141.,
                'LT_CG_AMT_2': 485197199930 / 781141.,
+               'ST_CG_AMT_APPRATE': 209659446475 / 781141.,
+               'TOTAL_INCOME_OS': 1469424739773 / 782060.,
+               'CYL_SET_OFF': 376486955786 / 790443.,
+               'TOTAL_DEDUC_VIA': 716950424561 / 790443.,
+               'DEDUCT_SEC_10A_OR_10AA': 567899906850 / 790443.,
+               'NET_AGRC_INCOME': 20689305576 / 790443.,
                'AGGREGATE_LIABILTY': 3954771854602 / 790443.}
 
 # Totals in the sample
