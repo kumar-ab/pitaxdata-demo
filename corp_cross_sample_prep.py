@@ -15,17 +15,20 @@ as totals for other measures and the distribution of firm sizes.
 import pandas as pd
 
 # Get data for 2017
-data17 = pd.read_excel('ITR6_2017_CROSS_SECTION_WB_TRNG_NEW.xlsx',
-                       sheet_name='ITR6_2017_CROSS_SECTION_WB_TRNG')
-count = len(data17)
+data_full = pd.read_excel('ITR6_2017_2013_PANEL_new.xlsx',
+                       sheet_name='ITR6_2017_2013_PANEL_new')
 
 # Rename some variables
 renames = {'SHORT_TERM_15PER': 'ST_CG_AMT_1', 'SHORT_TERM_30PER': 'ST_CG_AMT_2',
            'LONG_TERM_10PER': 'LT_CG_AMT_1', 'LONG_TERM_20PER': 'LT_CG_AMT_2',
            'SHORT_TERM_APPRATE': 'ST_CG_AMT_APPRATE',
-           'TOTAL_INCOME_ALL':'GTI_BEFORE_LOSSES'}
-data17 = data17.rename(renames, axis=1)
-data17 = data17.fillna(0)
+           'TOTAL_INCOME_ALL':'GTI_BEFORE_LOSSES', 'PAN_NO_HASH': 'ID_NO'}
+data_full = data_full.rename(renames, axis=1)
+data_full = data_full.fillna(0)
+
+data17 = data_full[data_full['ASSESSMENT_YEAR'] == 2017].reset_index()
+count = len(data17)
+
 
 # Average amounts per company from the 2017 full sample
 total_returns = 781141.0
