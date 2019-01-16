@@ -145,7 +145,7 @@ blowup_results = {}
 for var in varlist:
     sample_results[var] = 1.0 * sum(data13[var]) / count
     if sample_results[var] != 0:
-        blowup_results[var] = [agg_results[var] / sample_results[var]]
+        blowup_results[var] = [min(agg_results[var] / sample_results[var], 10)]
     else:
         blowup_results[var] = [1.0]
 
