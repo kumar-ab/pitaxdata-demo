@@ -118,7 +118,9 @@ WGT2017 = total_returns / count
 # Assume 10% growth rate in number of firms filing
 weights_df = pd.DataFrame({'WT2017': [WGT2017] * count,
                            'WT2018': [WGT2017 * 1.1] * count,
-                           'WT2019': [WGT2017 * 1.1 * 1.1] * count})
+                           'WT2019': [WGT2017 * 1.1**2] * count,
+                           'WT2020': [WGT2017 * 1.1**3] * count,
+                           'WT2021': [WGT2017 * 1.1**4] * count})
 
 # Export results
 data17.round(6)

@@ -16,7 +16,6 @@ We also apply a process for organically advancing 2013 losses carried forward.
 
 import pandas as pd
 import numpy as np
-import copy
 
 # Get full panel data
 data_full = pd.read_excel('ITR6_2017_2013_PANEL_new.xlsx',
@@ -267,11 +266,33 @@ data_full.drop(['index'], axis=1, inplace=True)
 The following code deals with the calculation of blow-up factors.
 The blow-up factors are calculated to match 2013 results to 2017 results, with
 2017 results calculated from the complete data and 2013 from the sample.
+
+For subsequent years, we can either use the natural growth process that
+occurred beginning in 2013 or use the growthfactors specified in 
+pitaxcalc-demo. To use the latter, set match_gfactors to True.
 """
 
-# Get results for 2013
+match_gfactors = False
+
+# Separate the datasets
 data13 = data_full[data_full['ASSESSMENT_YEAR'] == 2013].reset_index()
-count = len(data13)
+data14 = data_full[data_full['ASSESSMENT_YEAR'] == 2014].reset_index()
+data15 = data_full[data_full['ASSESSMENT_YEAR'] == 2015].reset_index()
+data16 = data_full[data_full['ASSESSMENT_YEAR'] == 2016].reset_index()
+data17 = data_full[data_full['ASSESSMENT_YEAR'] == 2017].reset_index()
+
+# Read in the growth factors
+gfactors = pd.read_csv('../pitaxcalc-demo/taxcalc/growfactors.csv')
+gfactors.set_index('YEAR', inplace=True)
+count = [0] * len(gfactors)
+count[0] = len(data13)
+count[1] = len(data14)
+count[2] = len(data15)
+count[3] = len(data16)
+count[4] = len(data17)
+
+datasets = [data13, data14, data15, data16, data17]
+
 
 # Variable list we need to use
 varlist = ['INCOME_HP', 'PRFT_GAIN_BP_OTHR_SPECLTV_BUS',
@@ -301,30 +322,46 @@ agg_results = {'no_returns': 543310.,
                'AGGREGATE_LIABILTY': 3954771854602 / 790443.,
                'BFL_SET_OFF_BALANCE': 1125891121508 / 790443.}
 
+
+# Rename some growthfactors
+gfactors.rename({'RENT': 'INCOME_HP',
+                 'BP_NONSPECULATIVE': 'PRFT_GAIN_BP_OTHR_SPECLTV_BUS',
+                 'BP_SPECULATIVE': 'PRFT_GAIN_BP_SPECLTV_BUS',
+                 'BP_SPECIFIED': 'PRFT_GAIN_BP_SPCFD_BUS',
+                 'STCG_APPRATE': 'ST_CG_AMT_APPRATE',
+                 'OINCOME': 'TOTAL_INCOME_OS', 'LOSSES_CY': 'CYL_SET_OFF',
+                 'AGRI_INCOME': 'NET_AGRC_INCOME',
+                 'DEDU_SEC_10A_OR_10AA': 'DEDUCT_SEC_10A_OR_10AA',
+                 'DEDUCTIONS': 'TOTAL_DEDUC_VIA',
+                 'CORP': 'AGGREGATE_LIABILTY',
+                 'LOSSES_BF': 'BFL_SET_OFF_BALANCE'},
+                axis=1, inplace=True)
 # Totals in the sample
 sample_results = {'no_returns': count}
 blowup_results = {}
 
 for var in varlist:
-    sample_results[var] = 1.0 * sum(data13[var]) / count
-    if sample_results[var] != 0:
-        blowup_results[var] = [min(agg_results[var] / sample_results[var], 10)]
-    else:
-        blowup_results[var] = [1.0]
+    # Store empty lists in blowup_results
+    blowup_results[var] = []
+    for year in range(2017, 2022):
+        if match_gfactors:
+            # Apply growth factor to aggregate results and use given year
+            agg_results[var] *= gfactors.loc[year, var]
+            sample_results[var] = 1.0 * sum(datasets[year-2017][var]) / count[year-2017]
+        else:
+            # Use the 2013 data only
+            sample_results[var] = 1.0 * sum(datasets[0][var]) / count[0]
+        if sample_results[var] != 0:
+            blowup_results[var].append(min(agg_results[var] / sample_results[var], 10))
+        else:
+            blowup_results[var].append(1.0)
 
-# Produce weights for each observation in 2013
-WT2013 = np.array([agg_results['no_returns'] / sample_results['no_returns']] *
-                  count)
-# Assume 10% growth rate in number of firms filing
-weights_df = pd.DataFrame({'WT2017': [WT2013] * count,
-                           'WT2018': [WT2013 * 1.1] * count,
-                           'WT2019': [WT2013 * 1.1 * 1.1] * count})
-
-
-# Export CSV and blowup results
 blowup_df = pd.DataFrame.from_dict(blowup_results)
 blowup_df.round(6)
-blowup_df.to_csv('cit_panel_blowup.csv', index=False)
+blowup_df['YEAR'] = range(2017, 2022)
+blowup_df.set_index('YEAR', inplace=True)
+blowup_df.to_csv('cit_panel_blowup.csv')
+
 data_full.round(6)
 data_full.to_csv('cit_panel.csv', index=False)
 

@@ -16,5 +16,9 @@ weights['WT2018'] = [wt*n_ITR_GrowthRate[x]
                      for (wt,x) in zip(weights['WT2017'], data['FORM_ID'])]
 weights['WT2019'] = [wt*n_ITR_GrowthRate[x]
                      for (wt,x) in zip(weights['WT2018'], data['FORM_ID'])]
+weights['WT2020'] = [wt*n_ITR_GrowthRate[x]
+                     for (wt,x) in zip(weights['WT2019'], data['FORM_ID'])]
+weights['WT2021'] = [wt*n_ITR_GrowthRate[x]
+                     for (wt,x) in zip(weights['WT2020'], data['FORM_ID'])]
 
 weights.to_csv('pit_weights.csv', index=False)
