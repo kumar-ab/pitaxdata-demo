@@ -18,8 +18,8 @@ import pandas as pd
 import numpy as np
 
 # Get full panel data
-data_full = pd.read_excel('ITR6_2017_2013_PANEL_new.xlsx',
-                          sheet_name='ITR6_2017_2013_PANEL_new')
+data_full = pd.read_excel('ITR6_2017_2013_BAL_PANEL_FINAL.xlsx',
+                          sheet_name='Sheet2')
 
 # Rename some variables
 renames = {'SHORT_TERM_15PER': 'ST_CG_AMT_1', 'SHORT_TERM_30PER': 'ST_CG_AMT_2',
@@ -30,10 +30,44 @@ renames = {'SHORT_TERM_15PER': 'ST_CG_AMT_1', 'SHORT_TERM_30PER': 'ST_CG_AMT_2',
 data_full = data_full.rename(renames, axis=1)
 data_full = data_full.fillna(0)
 
+data_full['ST_CG_AMT_1'] = np.where(data_full.ASSESSMENT_YEAR == 2013,
+         np.maximum(data_full['STCG_SEC111A'], 0.), data_full['ST_CG_AMT_1'])
+data_full['ST_CG_AMT_2'] = np.where(data_full.ASSESSMENT_YEAR == 2013,
+         np.maximum(data_full['STCG_OTHERS'], 0.), data_full['ST_CG_AMT_2'])
+data_full['LT_CG_AMT_1'] = np.where(data_full.ASSESSMENT_YEAR == 2013,
+         np.maximum(data_full['LTCG_NO_INDEXATION'], 0.), data_full['LT_CG_AMT_1'])
+data_full['LT_CG_AMT_2'] = np.where(data_full.ASSESSMENT_YEAR == 2013,
+         np.maximum(data_full['LTCG_INDEXATION'], 0.), data_full['LT_CG_AMT_2'])
+
+
+"""
+The following code (commented out) is a temporary fix for strange observations
+on capital gains.
+
+stcg1 = np.array(data_full.ST_CG_AMT_1)
+stcg2 = np.array(data_full.ST_CG_AMT_2)
+stcg3 = np.array(data_full.ST_CG_AMT_APPRATE)
+stcgT = np.array(data_full.TOTAL_SCTG)
+ltcg1 = np.array(data_full.LT_CG_AMT_1)
+ltcg2 = np.array(data_full.LT_CG_AMT_2)
+ltcgT = np.array(data_full.TOTAL_LTCG)
+stcg_miss = stcgT - stcg1 - stcg2 - stcg3
+ltcg_miss = ltcgT - ltcg1 - ltcg2
+data_full['ST_CG_AMT_1'] = data_full['ST_CG_AMT_1'] + 0.5 * stcg_miss
+data_full['ST_CG_AMT_2'] = data_full['ST_CG_AMT_2'] + 0.5 * stcg_miss
+data_full['LT_CG_AMT_1'] = data_full['LT_CG_AMT_1'] + 0.5 * ltcg_miss
+data_full['LT_CG_AMT_2'] = data_full['LT_CG_AMT_2'] + 0.5 * ltcg_miss
+"""
+
+
+
 data13 = data_full[data_full.ASSESSMENT_YEAR == 2013].reset_index()
 data14 = data_full[data_full.ASSESSMENT_YEAR == 2014].reset_index()
 data15 = data_full[data_full.ASSESSMENT_YEAR == 2015].reset_index()
 data16 = data_full[data_full.ASSESSMENT_YEAR == 2016].reset_index()
+
+
+
 
 """
 The following code handles the losses.
@@ -272,7 +306,7 @@ occurred beginning in 2013 or use the growthfactors specified in
 pitaxcalc-demo. To use the latter, set match_gfactors to True.
 """
 
-match_gfactors = False
+match_gfactors = True
 
 # Separate the datasets
 data13 = data_full[data_full['ASSESSMENT_YEAR'] == 2013].reset_index()
@@ -321,7 +355,7 @@ agg_results = {'no_returns': 543310.,
                'NET_AGRC_INCOME': 20689305576 / 790443.,
                'AGGREGATE_LIABILTY': 3954771854602 / 790443.,
                'BFL_SET_OFF_BALANCE': 1125891121508 / 790443.}
-
+agg_results2 = copy.deepcopy(agg_results)
 
 # Rename some growthfactors
 gfactors.rename({'RENT': 'INCOME_HP',
@@ -339,22 +373,53 @@ gfactors.rename({'RENT': 'INCOME_HP',
 # Totals in the sample
 sample_results = {'no_returns': count}
 blowup_results = {}
-
+agg_results3 = {}
+"""
 for var in varlist:
     # Store empty lists in blowup_results
     blowup_results[var] = []
     for year in range(2017, 2022):
         if match_gfactors:
             # Apply growth factor to aggregate results and use given year
-            agg_results[var] *= gfactors.loc[year, var]
+            agg_results2[var] *= gfactors.loc[year, var]
             sample_results[var] = 1.0 * sum(datasets[year-2017][var]) / count[year-2017]
         else:
             # Use the 2013 data only
             sample_results[var] = 1.0 * sum(datasets[0][var]) / count[0]
         if sample_results[var] != 0:
-            blowup_results[var].append(min(agg_results[var] / sample_results[var], 10))
+            blowup_results[var].append(min(agg_results2[var] / sample_results[var], 20))
         else:
             blowup_results[var].append(1.0)
+"""
+for var in varlist:
+    # Store empty lists in blowup_results
+    blowup_results[var] = []
+    agg_results3[var] = sum(datasets[4][var]) / count[4] * gfactors.loc[2017, var]
+    for year in range(2017, 2022):
+        if match_gfactors:
+            # Apply growth factor to aggregate results and use given year
+            agg_results3[var] *= gfactors.loc[year, var]
+            sample_results[var] = 1.0 * sum(datasets[year-2017][var]) / count[year-2017]
+        else:
+            # Use the 2013 data only
+            sample_results[var] = 1.0 * sum(datasets[0][var]) / count[0]
+        if sample_results[var] != 0:
+            blowup_results[var].append(min(agg_results3[var] / sample_results[var], 50))
+        else:
+            blowup_results[var].append(1.0)
+
+
+"""
+Fill this in later
+wgt13 = 
+
+
+weights_df = pd.DataFrame({'WT2017': [] * count,
+                           'WT2018': [WGT2017 * 1.1] * count,
+                           'WT2019': [WGT2017 * 1.1**2] * count,
+                           'WT2020': [WGT2017 * 1.1**3] * count,
+                           'WT2021': [WGT2017 * 1.1**4] * count})
+"""
 
 blowup_df = pd.DataFrame.from_dict(blowup_results)
 blowup_df.round(6)
