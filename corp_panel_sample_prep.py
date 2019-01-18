@@ -6,7 +6,7 @@ They must be saved in some form, and we will store them in agg_results.
 
 For now, we produce the sample weight and blow-up factors for the entire sample.
 A subsequent improvement should produce aggregate results by industry/sector,
-and produce weights and blow-up factors by industry/sector. 
+and produce weights and blow-up factors by industry/sector.
 
 We may also want to consider weight adjustments to target other results, such
 as totals for other measures and the distribution of firm sizes.
@@ -16,6 +16,7 @@ We also apply a process for organically advancing 2013 losses carried forward.
 
 import pandas as pd
 import numpy as np
+import copy
 
 # Get full panel data
 data_full = pd.read_excel('ITR6_2017_2013_BAL_PANEL_FINAL.xlsx',
@@ -125,7 +126,7 @@ for losstype in losstypelist:
     loss_lag6 += get_loss_type(2013, 6, losstype)
     loss_lag7 += get_loss_type(2013, 7, losstype)
     loss_lag8 += get_loss_type(2013, 8, losstype)
-    
+
 
 def calc_new_lags(dat):
     """
@@ -302,7 +303,7 @@ The blow-up factors are calculated to match 2013 results to 2017 results, with
 2017 results calculated from the complete data and 2013 from the sample.
 
 For subsequent years, we can either use the natural growth process that
-occurred beginning in 2013 or use the growthfactors specified in 
+occurred beginning in 2013 or use the growthfactors specified in
 pitaxcalc-demo. To use the latter, set match_gfactors to True.
 """
 
@@ -333,7 +334,7 @@ varlist = ['INCOME_HP', 'PRFT_GAIN_BP_OTHR_SPECLTV_BUS',
            'PRFT_GAIN_BP_SPECLTV_BUS', 'PRFT_GAIN_BP_SPCFD_BUS',
            #'PRFT_GAIN_BP_INC_115BBF',
            'ST_CG_AMT_1', 'ST_CG_AMT_2', 'ST_CG_AMT_APPRATE', 'LT_CG_AMT_1',
-           'LT_CG_AMT_2', 'TOTAL_INCOME_OS', 'CYL_SET_OFF', 'TOTAL_DEDUC_VIA', 
+           'LT_CG_AMT_2', 'TOTAL_INCOME_OS', 'CYL_SET_OFF', 'TOTAL_DEDUC_VIA',
            'DEDUCT_SEC_10A_OR_10AA', 'NET_AGRC_INCOME', 'AGGREGATE_LIABILTY',
            'BFL_SET_OFF_BALANCE']
 # Average amounts for various measures
@@ -407,11 +408,24 @@ for var in varlist:
             blowup_results[var].append(min(agg_results3[var] / sample_results[var], 50))
         else:
             blowup_results[var].append(1.0)
-
+agg_results3['INVESTMENT'] = sum(datasets[4]['PADDTNS_180_DAYS__MOR_PY_15P'] + datasets[4]['PADDTNS_LESS_180_DAYS_15P']) / count[4] * gfactors.loc[2017, var]
+blowup_results['INVESTMENT'] = []
+for year in range(2017, 2022):
+    if match_gfactors:
+        # Apply growth factor to aggregate results and use given year
+        agg_results3['INVESTMENT'] *= gfactors.loc[year, 'INVESTMENT']
+        sample_results['INVESTMENT'] = 1.0 * sum(datasets[year-2017]['PADDTNS_180_DAYS__MOR_PY_15P'] + datasets[year-2017]['PADDTNS_LESS_180_DAYS_15P']) / count[year-2017]
+    else:
+        # Use the 2013 data only
+        sample_results['INVESTMENT'] = 1.0 * sum(datasets[0]['PADDTNS_180_DAYS__MOR_PY_15P'] + datasets[0]['PADDTNS_LESS_180_DAYS_15P']) / count[0]
+    if sample_results['INVESTMENT'] != 0:
+        blowup_results['INVESTMENT'].append(min(agg_results3['INVESTMENT'] / sample_results['INVESTMENT'], 50))
+    else:
+        blowup_results[var].append(1.0)
 
 """
 Fill this in later
-wgt13 = 
+wgt13 =
 
 
 weights_df = pd.DataFrame({'WT2017': [] * count,
@@ -429,5 +443,3 @@ blowup_df.to_csv('cit_panel_blowup.csv')
 
 data_full.round(6)
 data_full.to_csv('cit_panel.csv', index=False)
-
-
