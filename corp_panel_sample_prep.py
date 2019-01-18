@@ -13,6 +13,7 @@ as totals for other measures and the distribution of firm sizes.
 
 We also apply a process for organically advancing 2013 losses carried forward.
 """
+
 import pandas as pd
 import numpy as np
 import copy
@@ -234,26 +235,32 @@ data13a = data13.merge(right=carryforward_df, how='outer', on='ID_NO', indicator
 merge_info = np.array(data13a['_merge'])
 to_update = np.where(merge_info == 'both', True, False)
 to_keep = np.where(merge_info != 'right_only', True, False)
-data13a['LOSS_LAG1'] = np.where(to_update, data13a['newloss1'], data13a['LOSS_LAG1'])
-data13a['LOSS_LAG2'] = np.where(to_update, data13a['newloss2'], data13a['LOSS_LAG2'])
-data13a['LOSS_LAG3'] = np.where(to_update, data13a['newloss3'], data13a['LOSS_LAG3'])
-data13a['LOSS_LAG4'] = np.where(to_update, data13a['newloss4'], data13a['LOSS_LAG4'])
-data13a['LOSS_LAG5'] = np.where(to_update, data13a['newloss5'], data13a['LOSS_LAG5'])
-data13a['LOSS_LAG6'] = np.where(to_update, data13a['newloss6'], data13a['LOSS_LAG6'])
-data13a['LOSS_LAG7'] = np.where(to_update, data13a['newloss7'], data13a['LOSS_LAG7'])
-data13a['LOSS_LAG8'] = np.where(to_update, data13a['newloss8'], data13a['LOSS_LAG8'])
+data13a['LOSS_LAG1'] = np.where(to_update, data13a['newloss1_y'], data13a['LOSS_LAG1'])
+data13a['LOSS_LAG2'] = np.where(to_update, data13a['newloss2_y'], data13a['LOSS_LAG2'])
+data13a['LOSS_LAG3'] = np.where(to_update, data13a['newloss3_y'], data13a['LOSS_LAG3'])
+data13a['LOSS_LAG4'] = np.where(to_update, data13a['newloss4_y'], data13a['LOSS_LAG4'])
+data13a['LOSS_LAG5'] = np.where(to_update, data13a['newloss5_y'], data13a['LOSS_LAG5'])
+data13a['LOSS_LAG6'] = np.where(to_update, data13a['newloss6_y'], data13a['LOSS_LAG6'])
+data13a['LOSS_LAG7'] = np.where(to_update, data13a['newloss7_y'], data13a['LOSS_LAG7'])
+data13a['LOSS_LAG8'] = np.where(to_update, data13a['newloss8_y'], data13a['LOSS_LAG8'])
 
-dataf1 = data_full.merge(right=carryforward_df, how='outer', on=['ID_NO', 'ASSESSMENT_YEAR'])
-dataf1['LOSS_LAG1'] = np.where(dataf1.ASSESSMENT_YEAR == 2013, dataf1.newloss1, 0)
-dataf1['LOSS_LAG2'] = np.where(dataf1.ASSESSMENT_YEAR == 2013, dataf1.newloss2, 0)
-dataf1['LOSS_LAG3'] = np.where(dataf1.ASSESSMENT_YEAR == 2013, dataf1.newloss3, 0)
-dataf1['LOSS_LAG4'] = np.where(dataf1.ASSESSMENT_YEAR == 2013, dataf1.newloss4, 0)
-dataf1['LOSS_LAG5'] = np.where(dataf1.ASSESSMENT_YEAR == 2013, dataf1.newloss5, 0)
-dataf1['LOSS_LAG6'] = np.where(dataf1.ASSESSMENT_YEAR == 2013, dataf1.newloss6, 0)
-dataf1['LOSS_LAG7'] = np.where(dataf1.ASSESSMENT_YEAR == 2013, dataf1.newloss7, 0)
-dataf1['LOSS_LAG8'] = np.where(dataf1.ASSESSMENT_YEAR == 2013, dataf1.newloss8, 0)
+dataf1 = data_full.merge(right=carryforward_df, how='outer', on=['ID_NO', 'ASSESSMENT_YEAR'], indicator=True)
+merge_info = np.array(dataf1['_merge'])
+to_update = np.where(merge_info == 'both', True, False)
+to_keep = np.where(merge_info != 'right_only', True, False)
+dataf1['LOSS_LAG1'] = np.where(to_update, dataf1.newloss1, 0)
+dataf1['LOSS_LAG2'] = np.where(to_update, dataf1.newloss2, 0)
+dataf1['LOSS_LAG3'] = np.where(to_update, dataf1.newloss3, 0)
+dataf1['LOSS_LAG4'] = np.where(to_update, dataf1.newloss4, 0)
+dataf1['LOSS_LAG5'] = np.where(to_update, dataf1.newloss5, 0)
+dataf1['LOSS_LAG6'] = np.where(to_update, dataf1.newloss6, 0)
+dataf1['LOSS_LAG7'] = np.where(to_update, dataf1.newloss7, 0)
+dataf1['LOSS_LAG8'] = np.where(to_update, dataf1.newloss8, 0)
+dataf1.drop(['newloss1', 'newloss2', 'newloss3', 'newloss4', 'newloss5',
+             'newloss6', 'newloss7', 'newloss8', '_merge'], axis=1, inplace=True)
+data_full = dataf1[to_keep].reset_index()
+data_full.drop(['index'], axis=1, inplace=True)
 
-data_full = copy.deepcopy(dataf1)
 
 
 """
