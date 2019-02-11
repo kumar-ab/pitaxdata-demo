@@ -46,6 +46,7 @@ weights = pd.DataFrame()
 weights['WT2017'] = [weights_dict[x] for x in data['decile_group']]
 weights['WT2018'] = weights['WT2017'] * 1.1
 weights['WT2019'] = weights['WT2018'] * 1.1
+weights['WT2020'] = weights['WT2019'] * 1.1
 data = data.fillna(0)
 data.to_csv('pitBigData.csv', index=False)
 weights.to_csv('pit_weightsBD.csv', index=False)
