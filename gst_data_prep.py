@@ -95,6 +95,28 @@ df_item_rates_for_json.iloc[15,:] = ""
 df_item_rates_for_json.iloc[16,:] = ""
 df_item_rates_for_json.iloc[17,:] = "stop"
 
+d=[0.18]
+df_item_rates_for_json['gst_rate_benchmark']= ""
+df_item_rates_for_json.iloc[0,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "GST Benchmark Rate"
+df_item_rates_for_json.iloc[1,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "GST Benchmark Rate to calculate Policy Gap"
+df_item_rates_for_json.iloc[2,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "Benchmark Rate"
+df_item_rates_for_json.iloc[3,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= ""
+df_item_rates_for_json.iloc[4,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "AYEAR"
+df_item_rates_for_json.iloc[5,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= '["2017"]'
+df_item_rates_for_json.iloc[6,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= 2017
+df_item_rates_for_json.iloc[7,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= False
+df_item_rates_for_json.iloc[8,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= False
+df_item_rates_for_json.iloc[9,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= ""
+df_item_rates_for_json.iloc[10,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= ""
+df_item_rates_for_json.iloc[11,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= False
+df_item_rates_for_json.iloc[12,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= False
+df_item_rates_for_json.iloc[13,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= d
+df_item_rates_for_json.iloc[14,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= '{"min": 0, "max": 1}'
+df_item_rates_for_json.iloc[15,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= ""
+df_item_rates_for_json.iloc[16,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= ""
+df_item_rates_for_json.iloc[17,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "stop"
+
+
 df_item_rates_for_json['ind'] = ""
 df_item_rates_for_json.iloc[0, df_item_rates_for_json.columns.get_loc('ind')] = "long_name"
 df_item_rates_for_json.iloc[1, df_item_rates_for_json.columns.get_loc('ind')] = "description"
@@ -140,12 +162,20 @@ Source: Annual Estimate of GDP at Current Prices base 2011-12
 Ministry of Statistics and Program Implementation MOSPI
 mospi.nic.in/data
 """
+
+HHS_TOTAL_WEIGHT = 2210659 
 GPFCE_2011 = 4910447
 GPFCE_2016 = 9004904
+GPFCE_2017 = 10083000
+GPFCE_2018 = 11333000
+INFLATOR_2011 = (GPFCE_2011/HHS_TOTAL_WEIGHT)
 """
 Extraploating 2011 data to assessment year 2017
 """
+#df_cons_summ['Value'] = df_cons_summ['Value'] * (GPFCE_2016/GPFCE_2011)
+df_cons_summ['Value'] = df_cons_summ['Value'] * INFLATOR_2011
 df_cons_summ['Value'] = df_cons_summ['Value'] * (GPFCE_2016/GPFCE_2011)
+
 
 df_cons_summ['item_category_1'] = "cons_" + df_cons_summ['item_category_1']
 
@@ -162,55 +192,83 @@ df_cons_summ_trans.columns = df_cons_summ_trans.columns.str.upper()
 df_cons_summ_trans = df_cons_summ_trans.rename(columns={'HHID': 'ID_NO'})
 df_cons_summ_trans = df_cons_summ_trans.rename(columns={'COMBINED_MULTIPLIER': 'WEIGHT'})
 df_cons_summ_trans['ASSESSMENT_YEAR'] = 2017
-df_cons_summ_trans['CONS_OTHER'] = df_cons_summ_trans[df_cons_summ_trans.columns[df_cons_summ_trans.columns.str.startswith('CONS_')]].sum(axis=1)
-df_cons_summ_trans['CONS_OTHER'] = df_cons_summ_trans['CONS_OTHER'] - df_cons_summ_trans['CONS_CEREAL']
+# df_cons_summ_trans['CONS_OTHER'] = df_cons_summ_trans[df_cons_summ_trans.columns[df_cons_summ_trans.columns.str.startswith('CONS_')]].sum(axis=1)
+# df_cons_summ_trans['CONS_OTHER'] = df_cons_summ_trans['CONS_OTHER'] - df_cons_summ_trans['CONS_CEREAL']
 df_cons_summ_trans.to_csv('gst.csv', index=False)
 
 """
 Generate JSON File for the gst record variables which declares all variables
 used in gst.csv
 """
-df_gst_for_json = df_cons_summ_trans.drop(df_cons_summ_trans.index)
-df_gst_for_json = pd.concat([df_gst_for_json, pd.DataFrame([[np.nan] * df_gst_for_json.shape[1]], columns=df_gst_for_json.columns)], ignore_index=True)
-df_gst_for_json = pd.concat([df_gst_for_json, pd.DataFrame([[np.nan] * df_gst_for_json.shape[1]], columns=df_gst_for_json.columns)], ignore_index=True)
-df_gst_for_json = pd.concat([df_gst_for_json, pd.DataFrame([[np.nan] * df_gst_for_json.shape[1]], columns=df_gst_for_json.columns)], ignore_index=True)
+df_gst_for_json_read = df_cons_summ_trans.drop(df_cons_summ_trans.index)
+df_gst_for_json_read = pd.concat([df_gst_for_json_read, pd.DataFrame([[np.nan] * df_gst_for_json_read.shape[1]], columns=df_gst_for_json_read.columns)], ignore_index=True)
+df_gst_for_json_read = pd.concat([df_gst_for_json_read, pd.DataFrame([[np.nan] * df_gst_for_json_read.shape[1]], columns=df_gst_for_json_read.columns)], ignore_index=True)
+df_gst_for_json_read = pd.concat([df_gst_for_json_read, pd.DataFrame([[np.nan] * df_gst_for_json_read.shape[1]], columns=df_gst_for_json_read.columns)], ignore_index=True)
 
-df_gst_for_json.loc[0, df_gst_for_json.columns.str.startswith('CONS_')]="float"
-df_gst_for_json.loc[1, :] = df_gst_for_json.columns.str.replace('CONS_','CONSUMPTION OF ')
-df_gst_for_json.iloc[2, :] ='{"2017": "Household Survey 48th Round Block 12"}'
+df_gst_for_json_calc = df_gst_for_json_read
 
-df_gst_for_json = df_gst_for_json.rename(columns={'WEIGHT': 'weight'})
-df_gst_for_json.iloc[0,df_gst_for_json.columns.get_loc('weight')]= "float"
-df_gst_for_json.iloc[1,df_gst_for_json.columns.get_loc('weight')]= "Household unit sampling weight"
-df_gst_for_json.iloc[2,df_gst_for_json.columns.get_loc('weight')]= '{"2017": "not used in filing unit tax calculations"}'
+df_gst_for_json_read.loc[0, df_gst_for_json_read.columns.str.startswith('CONS_')]="float"
+df_gst_for_json_read.loc[1, :] = df_gst_for_json_read.columns.str.replace('CONS_','CONSUMPTION OF ')
+df_gst_for_json_read.iloc[2, :] ='{"2017": "Household Survey 48th Round Block 12"}'
 
-df_gst_for_json.iloc[0,df_gst_for_json.columns.get_loc('ID_NO')]= "int"
-df_gst_for_json.iloc[1,df_gst_for_json.columns.get_loc('ID_NO')]= "Household ID HHID"
-df_gst_for_json.iloc[0,df_gst_for_json.columns.get_loc('HH_SIZE')]= "int"
-df_gst_for_json.iloc[1,df_gst_for_json.columns.get_loc('HH_SIZE')]= "Household Size"
-df_gst_for_json.iloc[2,df_gst_for_json.columns.get_loc('HH_SIZE')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
+df_gst_for_json_read = df_gst_for_json_read.rename(columns={'WEIGHT': 'weight'})
+df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('weight')]= "float"
+df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('weight')]= "Household unit sampling weight"
+df_gst_for_json_read.iloc[2,df_gst_for_json_read.columns.get_loc('weight')]= '{"2017": "not used in filing unit tax calculations"}'
 
-df_gst_for_json.iloc[0,df_gst_for_json.columns.get_loc('URBAN')]= "int"
-df_gst_for_json.iloc[1,df_gst_for_json.columns.get_loc('URBAN')]= "URBAN=1, RURAL=0"
-df_gst_for_json.iloc[2,df_gst_for_json.columns.get_loc('URBAN')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
+df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('ID_NO')]= "int"
+df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('ID_NO')]= "Household ID HHID"
+df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('HH_SIZE')]= "int"
+df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('HH_SIZE')]= "Household Size"
+df_gst_for_json_read.iloc[2,df_gst_for_json_read.columns.get_loc('HH_SIZE')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
 
-df_gst_for_json.iloc[0,df_gst_for_json.columns.get_loc('DISTRICT')]= "int"
-df_gst_for_json.iloc[1,df_gst_for_json.columns.get_loc('DISTRICT')]= "District Code"
-df_gst_for_json.iloc[2,df_gst_for_json.columns.get_loc('DISTRICT')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
+df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('URBAN')]= "int"
+df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('URBAN')]= "URBAN=1, RURAL=0"
+df_gst_for_json_read.iloc[2,df_gst_for_json_read.columns.get_loc('URBAN')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
 
-df_gst_for_json.iloc[0,df_gst_for_json.columns.get_loc('STATE_CODE')]= "int"
-df_gst_for_json.iloc[1,df_gst_for_json.columns.get_loc('STATE_CODE')]= "State Code"
-df_gst_for_json.iloc[2,df_gst_for_json.columns.get_loc('STATE_CODE')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
+df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('DISTRICT')]= "int"
+df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('DISTRICT')]= "District Code"
+df_gst_for_json_read.iloc[2,df_gst_for_json_read.columns.get_loc('DISTRICT')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
 
-df_gst_for_json.iloc[0,df_gst_for_json.columns.get_loc('ASSESSMENT_YEAR')]= "int"
-df_gst_for_json.iloc[1,df_gst_for_json.columns.get_loc('ASSESSMENT_YEAR')]= "Year of Consumption"
-df_gst_for_json.iloc[2,df_gst_for_json.columns.get_loc('ASSESSMENT_YEAR')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
+df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('STATE_CODE')]= "int"
+df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('STATE_CODE')]= "State Code"
+df_gst_for_json_read.iloc[2,df_gst_for_json_read.columns.get_loc('STATE_CODE')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
 
-df_gst_for_json['ind'] = "type"
-df_gst_for_json.iloc[1, df_gst_for_json.columns.get_loc('ind')] = "desc"
-df_gst_for_json.iloc[2, df_gst_for_json.columns.get_loc('ind')] = "form"
-df_gst_for_json.set_index('ind', inplace=True)
-df_gst_for_json.to_json('gst_rec1.json')
+df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('ASSESSMENT_YEAR')]= "int"
+df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('ASSESSMENT_YEAR')]= "Year of Consumption"
+df_gst_for_json_read.iloc[2,df_gst_for_json_read.columns.get_loc('ASSESSMENT_YEAR')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
+
+df_gst_for_json_read['ind'] = "type"
+df_gst_for_json_read.iloc[1, df_gst_for_json_read.columns.get_loc('ind')] = "desc"
+df_gst_for_json_read.iloc[2, df_gst_for_json_read.columns.get_loc('ind')] = "form"
+df_gst_for_json_read.set_index('ind', inplace=True)
+df_gst_for_json_read.to_json('gst_read_rec.json')
+
+calc_cols = df_gst_for_json_calc.columns[df_gst_for_json_calc.columns.str.startswith('CONS_')]
+df_gst_for_json_calc = df_gst_for_json_calc[calc_cols]
+calc_cols = calc_cols.str.replace('CONS_', 'gst_').str.lower()
+df_gst_for_json_calc.columns = calc_cols
+
+
+df_gst_for_json_calc.iloc[0, :] = "float"
+df_gst_for_json_calc.iloc[1, :] = df_gst_for_json_calc.columns.str.replace('gst_','GST Collection from ')
+df_gst_for_json_calc.iloc[2, :] ='{"2017": "Calculated"}'
+
+df_gst_for_json_calc['total consumption']= "float"
+df_gst_for_json_calc.iloc[1, df_gst_for_json_calc.columns.get_loc('total consumption')]= "Total Consumption of Household"
+df_gst_for_json_calc.iloc[2, df_gst_for_json_calc.columns.get_loc('total consumption')]= '{"2017": "Calculated"}'
+
+df_gst_for_json_calc['gst']= "float"
+df_gst_for_json_calc.iloc[1, df_gst_for_json_calc.columns.get_loc('gst')]= "Potential Collection of GST paid by Household"
+df_gst_for_json_calc.iloc[2, df_gst_for_json_calc.columns.get_loc('gst')]= '{"2017": "Calculated"}'
+
+df_gst_for_json_calc['ind'] = "type"
+df_gst_for_json_calc.iloc[1, df_gst_for_json_calc.columns.get_loc('ind')] = "desc"
+df_gst_for_json_calc.iloc[2, df_gst_for_json_calc.columns.get_loc('ind')] = "form"
+df_gst_for_json_calc.set_index('ind', inplace=True)
+df_gst_for_json_calc.to_json('gst_calc_rec.json')
+
+
 
 
 
