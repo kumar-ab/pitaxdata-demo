@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import json
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -77,12 +78,18 @@ df_item_rates_for_json.loc[len(df_item_rates_for_json)]=d
 df_item_rates_for_json.iloc[13,:] = df_item_rates_for_json.iloc[18,:]
 df_item_rates_for_json = df_item_rates_for_json[:-1]
 
+df_item_rates_for_json['gst_rate_benchmark']= ""
+row_label_year = [["2017"] for i in df_item_rates_for_json.iloc[13,:]]
+range_rate = [{"min": 0, "max": 1} for i in df_item_rates_for_json.iloc[13,:]]
+
+df_item_rates_for_json['gst_rate_benchmark']= ""
+
 df_item_rates_for_json.iloc[0,:] = df_item_rates_for_json.columns.str.replace('_gst_rate_','GST Rate for ')
 df_item_rates_for_json.iloc[1,:] = df_item_rates_for_json.columns.str.replace('_gst_rate_','GST Rate relevant for consumption of ')
 df_item_rates_for_json.iloc[2,:] = "GST Rules"
 df_item_rates_for_json.iloc[3,:] = ""
 df_item_rates_for_json.iloc[4,:] = "AYEAR"
-df_item_rates_for_json.iloc[5,:] = '["2017"]'
+df_item_rates_for_json.iloc[5,:] = row_label_year
 df_item_rates_for_json.iloc[6,:] = 2017
 df_item_rates_for_json.iloc[7,:] = False
 df_item_rates_for_json.iloc[8,:] = False
@@ -90,7 +97,7 @@ df_item_rates_for_json.iloc[9,:] = ""
 df_item_rates_for_json.iloc[10,:] = ""
 df_item_rates_for_json.iloc[11,:] = False
 df_item_rates_for_json.iloc[12,:] = False
-df_item_rates_for_json.iloc[14,:] = '{"min": 0, "max": 1}'
+df_item_rates_for_json.iloc[14,:] = range_rate
 df_item_rates_for_json.iloc[15,:] = ""
 df_item_rates_for_json.iloc[16,:] = ""
 df_item_rates_for_json.iloc[17,:] = "stop"
@@ -102,7 +109,7 @@ df_item_rates_for_json.iloc[1,df_item_rates_for_json.columns.get_loc('gst_rate_b
 df_item_rates_for_json.iloc[2,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "Benchmark Rate"
 df_item_rates_for_json.iloc[3,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= ""
 df_item_rates_for_json.iloc[4,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "AYEAR"
-df_item_rates_for_json.iloc[5,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= '["2017"]'
+df_item_rates_for_json.iloc[5,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= row_label_year
 df_item_rates_for_json.iloc[6,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= 2017
 df_item_rates_for_json.iloc[7,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= False
 df_item_rates_for_json.iloc[8,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= False
@@ -111,7 +118,7 @@ df_item_rates_for_json.iloc[10,df_item_rates_for_json.columns.get_loc('gst_rate_
 df_item_rates_for_json.iloc[11,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= False
 df_item_rates_for_json.iloc[12,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= False
 df_item_rates_for_json.iloc[13,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= d
-df_item_rates_for_json.iloc[14,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= '{"min": 0, "max": 1}'
+df_item_rates_for_json.iloc[14,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= range_rate
 df_item_rates_for_json.iloc[15,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= ""
 df_item_rates_for_json.iloc[16,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= ""
 df_item_rates_for_json.iloc[17,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "stop"
@@ -137,7 +144,19 @@ df_item_rates_for_json.iloc[15, df_item_rates_for_json.columns.get_loc('ind')] =
 df_item_rates_for_json.iloc[16, df_item_rates_for_json.columns.get_loc('ind')] = "out_of_range_maxmsg"
 df_item_rates_for_json.iloc[17, df_item_rates_for_json.columns.get_loc('ind')] = "out_of_range_action"
 df_item_rates_for_json.set_index('ind', inplace=True)
-df_item_rates_for_json.to_json('gst_policy1.json')
+
+item_rates_dict_for_json = df_item_rates_for_json.to_dict()
+
+with open('current_law_policy_pit_cit.json', 'r') as f:
+    current_law_policy_dict = json.load(f)
+
+current_law_policy_dict.update(item_rates_dict_for_json)
+
+with open("current_law_policy.json", "w") as f:
+    json.dump(current_law_policy_dict, f, indent=4, sort_keys=False)
+
+
+# df_item_rates_for_json.to_json('gst_policy1.json')
 
 """
 Generate gst.csv which contains consumption information from Summary table 
@@ -207,68 +226,106 @@ df_gst_for_json_read = pd.concat([df_gst_for_json_read, pd.DataFrame([[np.nan] *
 
 df_gst_for_json_calc = df_gst_for_json_read
 
+form_cons_data = [{"2017": "Household Survey 48th Round Block 12"} for i in df_gst_for_json_read.iloc[0,:]]
+form_hh_data = [{"2017": "Household Survey 48th Round Block 3 Level 2"} for i in df_gst_for_json_read.iloc[0,:]]
+
+df_gst_for_json_read.loc[len(df_gst_for_json_read)]=form_hh_data
+
 df_gst_for_json_read.loc[0, df_gst_for_json_read.columns.str.startswith('CONS_')]="float"
 df_gst_for_json_read.loc[1, :] = df_gst_for_json_read.columns.str.replace('CONS_','CONSUMPTION OF ')
-df_gst_for_json_read.iloc[2, :] ='{"2017": "Household Survey 48th Round Block 12"}'
+df_gst_for_json_read.iloc[2, :] = form_cons_data
 
 df_gst_for_json_read = df_gst_for_json_read.rename(columns={'WEIGHT': 'weight'})
 df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('weight')]= "float"
 df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('weight')]= "Household unit sampling weight"
-df_gst_for_json_read.iloc[2,df_gst_for_json_read.columns.get_loc('weight')]= '{"2017": "not used in filing unit tax calculations"}'
+df_gst_for_json_read.at[2,'weight'] = df_gst_for_json_read.at[3,'weight']
 
 df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('ID_NO')]= "int"
 df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('ID_NO')]= "Household ID HHID"
+
 df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('HH_SIZE')]= "int"
 df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('HH_SIZE')]= "Household Size"
-df_gst_for_json_read.iloc[2,df_gst_for_json_read.columns.get_loc('HH_SIZE')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
+df_gst_for_json_read.at[2,'HH_SIZE'] = df_gst_for_json_read.at[3,'HH_SIZE']
 
 df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('URBAN')]= "int"
 df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('URBAN')]= "URBAN=1, RURAL=0"
-df_gst_for_json_read.iloc[2,df_gst_for_json_read.columns.get_loc('URBAN')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
+df_gst_for_json_read.at[2,'URBAN'] = df_gst_for_json_read.at[3,'URBAN']
 
 df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('DISTRICT')]= "int"
 df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('DISTRICT')]= "District Code"
-df_gst_for_json_read.iloc[2,df_gst_for_json_read.columns.get_loc('DISTRICT')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
+df_gst_for_json_read.at[2,'DISTRICT'] = df_gst_for_json_read.at[3,'DISTRICT']
 
 df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('STATE_CODE')]= "int"
 df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('STATE_CODE')]= "State Code"
-df_gst_for_json_read.iloc[2,df_gst_for_json_read.columns.get_loc('STATE_CODE')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
+df_gst_for_json_read.at[2,'STATE_CODE'] = df_gst_for_json_read.at[3,'STATE_CODE']
 
 df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('ASSESSMENT_YEAR')]= "int"
 df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('ASSESSMENT_YEAR')]= "Year of Consumption"
-df_gst_for_json_read.iloc[2,df_gst_for_json_read.columns.get_loc('ASSESSMENT_YEAR')]= '{"2017": "Household Survey 48th Round Block 3 Level 2"}'
 
 df_gst_for_json_read['ind'] = "type"
 df_gst_for_json_read.iloc[1, df_gst_for_json_read.columns.get_loc('ind')] = "desc"
 df_gst_for_json_read.iloc[2, df_gst_for_json_read.columns.get_loc('ind')] = "form"
 df_gst_for_json_read.set_index('ind', inplace=True)
-df_gst_for_json_read.to_json('gst_read_rec.json')
+
+df_gst_for_json_read = df_gst_for_json_read[:-1]
+
+dict_gst_read = df_gst_for_json_read.to_dict()
+
+# df_gst_for_json_read.to_json('gst_read_rec.json')
 
 calc_cols = df_gst_for_json_calc.columns[df_gst_for_json_calc.columns.str.startswith('CONS_')]
 df_gst_for_json_calc = df_gst_for_json_calc[calc_cols]
 calc_cols = calc_cols.str.replace('CONS_', 'gst_').str.lower()
 df_gst_for_json_calc.columns = calc_cols
 
+df_gst_for_json_calc['total consumption']= "float"
+df_gst_for_json_calc['gst']= "float"
+
+form_calc_data = [{"2017": "Calculated"} for i in df_gst_for_json_calc.iloc[0,:]]
 
 df_gst_for_json_calc.iloc[0, :] = "float"
 df_gst_for_json_calc.iloc[1, :] = df_gst_for_json_calc.columns.str.replace('gst_','GST Collection from ')
-df_gst_for_json_calc.iloc[2, :] ='{"2017": "Calculated"}'
+df_gst_for_json_calc.iloc[2, :] = form_calc_data
 
-df_gst_for_json_calc['total consumption']= "float"
+#df_gst_for_json_calc['total consumption']= "float"
 df_gst_for_json_calc.iloc[1, df_gst_for_json_calc.columns.get_loc('total consumption')]= "Total Consumption of Household"
-df_gst_for_json_calc.iloc[2, df_gst_for_json_calc.columns.get_loc('total consumption')]= '{"2017": "Calculated"}'
+#df_gst_for_json_calc.iloc[2, df_gst_for_json_calc.columns.get_loc('total consumption')]= form_calc_data
 
-df_gst_for_json_calc['gst']= "float"
+#df_gst_for_json_calc['gst']= "float"
 df_gst_for_json_calc.iloc[1, df_gst_for_json_calc.columns.get_loc('gst')]= "Potential Collection of GST paid by Household"
-df_gst_for_json_calc.iloc[2, df_gst_for_json_calc.columns.get_loc('gst')]= '{"2017": "Calculated"}'
+#df_gst_for_json_calc.iloc[2, df_gst_for_json_calc.columns.get_loc('gst')]= form_calc_data
 
 df_gst_for_json_calc['ind'] = "type"
 df_gst_for_json_calc.iloc[1, df_gst_for_json_calc.columns.get_loc('ind')] = "desc"
 df_gst_for_json_calc.iloc[2, df_gst_for_json_calc.columns.get_loc('ind')] = "form"
 df_gst_for_json_calc.set_index('ind', inplace=True)
-df_gst_for_json_calc.to_json('gst_calc_rec.json')
 
+dict_gst_calc = df_gst_for_json_calc.to_dict()
 
+# Merging the two dictionary along with adding "read" and "calc" 
+dict_gst_rec = {"read": dict_gst_read, "calc": dict_gst_calc}
+
+# Pretty Print dictionary into json file
+with open("gstrecords_variables.json", "w") as f:
+    json.dump(dict_gst_rec, f, indent=4, sort_keys=True)
+
+# dict1 = df1.to_dict()
+# dict2 = df2.to_dict() 
+
+# Concatenate two dictionaries
+# dict1.update(dict2)
+
+# dictf = {"read": dict1, "calc": dict2}
+
+#converting the dictionary to dataframe
+
+# df_gst_for_json = pd.DataFrame(dict_gst_rec)
+
+# df = pd.DataFrame(dictf)
+
+# saving dataframe to json file
+# df_gst_for_json.to_json("gst_rec.json")
+# df.to_json("gst_records.json")
 
 
 
