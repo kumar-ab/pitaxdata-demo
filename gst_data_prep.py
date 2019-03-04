@@ -1,12 +1,13 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+# import matplotlib.pyplot as plt
+# import seaborn as sns
 import numpy as np
 import json
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+# Data Preparation to read Household Survey Files and generate csv files to use
 """
 df_cons_summ_full = pd.read_stata('Summary of Consumer Expenditure - Block 12 - Level 11 - 68.dta')
 print(df_cons_summ_full.dtypes)
@@ -32,22 +33,16 @@ df_hh_bl3_l2_short.to_csv('hh_characteristics_block3_level2_2011_short.csv')
 # df_hh_bl3_l3_short = df_hh_bl3_l3_data[['HHID', 'HH_Size',
 #                                  'Combined_multiplier']]
 """
+
 df_hh_bl3_l2_short = pd.read_csv('hh_characteristics_block3_level2_2011_short.csv')
 df_hh_bl3_l2_short = df_hh_bl3_l2_short.drop('Unnamed: 0', axis=1)
 df_cons_summ_all = pd.read_csv('consumer_expend_summ_2011_short.csv')
 
-# df_survey_mpc = df_cons_summ_all[df_cons_summ_all["Srl_no"] == 49]
-# df_survey_mpc.index = pd.RangeIndex(len(df_survey_mpc.index))
-# df_survey_mpc = df_survey_mpc.drop(df_survey_mpc.columns[0], axis = 1)
-# sns.distplot(tuple(df_survey_mpc['Value']), hist = False, kde = True,
-#             kde_kws = {'linewidth': 3},
-#             label = "consumption")
 
 # df_rates = pd.read_csv('GST Rates India 2019-work.csv', encoding='cp1252')
 df_rates = pd.read_csv('GST Rates India 2019-work.csv')
 df_rates["Srl_no"] = df_rates["Srl_no"].fillna(0).astype(int)
 df_rates_group = df_rates.groupby(['item_category_1'])['gst_rate'].mean()
-# df_rates_group["mean_rate"] = df_rates_group.groupby(['item_category_1'])['gst_rate'].transform('mean')
 df_rates_group = df_rates_group.to_frame()
 df_rates_group = df_rates_group.reset_index()
 df_rates_group = df_rates_group[~df_rates_group.item_category_1.str.contains(
@@ -211,8 +206,6 @@ df_cons_summ_trans.columns = df_cons_summ_trans.columns.str.upper()
 df_cons_summ_trans = df_cons_summ_trans.rename(columns={'HHID': 'ID_NO'})
 df_cons_summ_trans = df_cons_summ_trans.rename(columns={'COMBINED_MULTIPLIER': 'WEIGHT'})
 df_cons_summ_trans['ASSESSMENT_YEAR'] = 2017
-# df_cons_summ_trans['CONS_OTHER'] = df_cons_summ_trans[df_cons_summ_trans.columns[df_cons_summ_trans.columns.str.startswith('CONS_')]].sum(axis=1)
-# df_cons_summ_trans['CONS_OTHER'] = df_cons_summ_trans['CONS_OTHER'] - df_cons_summ_trans['CONS_CEREAL']
 df_cons_summ_trans.to_csv('gst.csv', index=False)
 
 """
@@ -223,8 +216,6 @@ df_gst_for_json_read = df_cons_summ_trans.drop(df_cons_summ_trans.index)
 df_gst_for_json_read = pd.concat([df_gst_for_json_read, pd.DataFrame([[np.nan] * df_gst_for_json_read.shape[1]], columns=df_gst_for_json_read.columns)], ignore_index=True)
 df_gst_for_json_read = pd.concat([df_gst_for_json_read, pd.DataFrame([[np.nan] * df_gst_for_json_read.shape[1]], columns=df_gst_for_json_read.columns)], ignore_index=True)
 df_gst_for_json_read = pd.concat([df_gst_for_json_read, pd.DataFrame([[np.nan] * df_gst_for_json_read.shape[1]], columns=df_gst_for_json_read.columns)], ignore_index=True)
-
-df_gst_for_json_calc = df_gst_for_json_read
 
 form_cons_data = [{"2017": "Household Survey 48th Round Block 12"} for i in df_gst_for_json_read.iloc[0,:]]
 form_hh_data = [{"2017": "Household Survey 48th Round Block 3 Level 2"} for i in df_gst_for_json_read.iloc[0,:]]
@@ -262,44 +253,42 @@ df_gst_for_json_read.at[2,'STATE_CODE'] = df_gst_for_json_read.at[3,'STATE_CODE'
 df_gst_for_json_read.iloc[0,df_gst_for_json_read.columns.get_loc('ASSESSMENT_YEAR')]= "int"
 df_gst_for_json_read.iloc[1,df_gst_for_json_read.columns.get_loc('ASSESSMENT_YEAR')]= "Year of Consumption"
 
+df_gst_for_json_read = df_gst_for_json_read[:-1]
+
 df_gst_for_json_read['ind'] = "type"
 df_gst_for_json_read.iloc[1, df_gst_for_json_read.columns.get_loc('ind')] = "desc"
 df_gst_for_json_read.iloc[2, df_gst_for_json_read.columns.get_loc('ind')] = "form"
 df_gst_for_json_read.set_index('ind', inplace=True)
-
-df_gst_for_json_read = df_gst_for_json_read[:-1]
-
+# Create json ditionary for read variables
 dict_gst_read = df_gst_for_json_read.to_dict()
 
-# df_gst_for_json_read.to_json('gst_read_rec.json')
+df_gst_for_json_calc = df_gst_for_json_read
 
 calc_cols = df_gst_for_json_calc.columns[df_gst_for_json_calc.columns.str.startswith('CONS_')]
 df_gst_for_json_calc = df_gst_for_json_calc[calc_cols]
 calc_cols = calc_cols.str.replace('CONS_', 'gst_').str.lower()
 df_gst_for_json_calc.columns = calc_cols
-
-df_gst_for_json_calc['total consumption']= "float"
-df_gst_for_json_calc['gst']= "float"
-
 form_calc_data = [{"2017": "Calculated"} for i in df_gst_for_json_calc.iloc[0,:]]
 
-df_gst_for_json_calc.iloc[0, :] = "float"
-df_gst_for_json_calc.iloc[1, :] = df_gst_for_json_calc.columns.str.replace('gst_','GST Collection from ')
-df_gst_for_json_calc.iloc[2, :] = form_calc_data
+df = pd.DataFrame(columns = calc_cols)
+df1 = pd.concat([df, pd.DataFrame([[np.nan] *
+                 len(calc_cols)], columns=calc_cols)], ignore_index=True)
+df1.iloc[0,:] = "float"
+df1 = pd.concat([df1, pd.DataFrame([[np.nan] *
+                 len(calc_cols)], columns=calc_cols)], ignore_index=True)
+cols = df1.columns.str.upper()
+df1.iloc[1,:] = cols.str.replace('GST_','GST paid by Household on consumption of ')
+df1 = pd.concat([df1, pd.DataFrame([[np.nan] *
+                 len(calc_cols)], columns=calc_cols)], ignore_index=True)
+df1.iloc[2,:] = form_calc_data
 
-#df_gst_for_json_calc['total consumption']= "float"
-df_gst_for_json_calc.iloc[1, df_gst_for_json_calc.columns.get_loc('total consumption')]= "Total Consumption of Household"
-#df_gst_for_json_calc.iloc[2, df_gst_for_json_calc.columns.get_loc('total consumption')]= form_calc_data
+df2 = pd.DataFrame({'ind':["type", "desc", "form"],
+                   'total consumption':["float","Total Consumption by Household during the year in Rupees", {"2017": "Calculated"}],
+                   'gst':["float","Potential GST paid by Household during the year in Rupees", {"2017": "Calculated"}]})
 
-#df_gst_for_json_calc['gst']= "float"
-df_gst_for_json_calc.iloc[1, df_gst_for_json_calc.columns.get_loc('gst')]= "Potential Collection of GST paid by Household"
-#df_gst_for_json_calc.iloc[2, df_gst_for_json_calc.columns.get_loc('gst')]= form_calc_data
-
-df_gst_for_json_calc['ind'] = "type"
-df_gst_for_json_calc.iloc[1, df_gst_for_json_calc.columns.get_loc('ind')] = "desc"
-df_gst_for_json_calc.iloc[2, df_gst_for_json_calc.columns.get_loc('ind')] = "form"
+df_gst_for_json_calc = pd.concat([df1,df2], axis=1)
 df_gst_for_json_calc.set_index('ind', inplace=True)
-
+# Create json ditionary for calc variables
 dict_gst_calc = df_gst_for_json_calc.to_dict()
 
 # Merging the two dictionary along with adding "read" and "calc" 
@@ -308,30 +297,4 @@ dict_gst_rec = {"read": dict_gst_read, "calc": dict_gst_calc}
 # Pretty Print dictionary into json file
 with open("gstrecords_variables.json", "w") as f:
     json.dump(dict_gst_rec, f, indent=4, sort_keys=True)
-
-# dict1 = df1.to_dict()
-# dict2 = df2.to_dict() 
-
-# Concatenate two dictionaries
-# dict1.update(dict2)
-
-# dictf = {"read": dict1, "calc": dict2}
-
-#converting the dictionary to dataframe
-
-# df_gst_for_json = pd.DataFrame(dict_gst_rec)
-
-# df = pd.DataFrame(dictf)
-
-# saving dataframe to json file
-# df_gst_for_json.to_json("gst_rec.json")
-# df.to_json("gst_records.json")
-
-
-
-
-
-
-
-# df_survey = pd.read_csv('consumer_expenditure_summary_2011.csv', encoding='cp1252', engine='python')
-# df_survey = pd.read_csv('consumer_summary_expenditure_2011.csv', encoding='cp1252', engine='python')
+    
