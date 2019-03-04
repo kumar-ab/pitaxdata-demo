@@ -75,6 +75,7 @@ df_item_rates_for_json = df_item_rates_for_json[:-1]
 
 df_item_rates_for_json['gst_rate_benchmark']= ""
 row_label_year = [["2017"] for i in df_item_rates_for_json.iloc[13,:]]
+
 range_rate = [{"min": 0, "max": 1} for i in df_item_rates_for_json.iloc[13,:]]
 
 df_item_rates_for_json['gst_rate_benchmark']= ""
@@ -98,13 +99,14 @@ df_item_rates_for_json.iloc[16,:] = ""
 df_item_rates_for_json.iloc[17,:] = "stop"
 
 d=[0.18]
-df_item_rates_for_json['gst_rate_benchmark']= ""
+#yr=["2017"]
+#df_item_rates_for_json['gst_rate_benchmark']= ""
 df_item_rates_for_json.iloc[0,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "GST Benchmark Rate"
 df_item_rates_for_json.iloc[1,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "GST Benchmark Rate to calculate Policy Gap"
 df_item_rates_for_json.iloc[2,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "Benchmark Rate"
 df_item_rates_for_json.iloc[3,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= ""
 df_item_rates_for_json.iloc[4,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "AYEAR"
-df_item_rates_for_json.iloc[5,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= row_label_year
+#df_item_rates_for_json.iloc[5,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= row_label_year
 df_item_rates_for_json.iloc[6,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= 2017
 df_item_rates_for_json.iloc[7,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= False
 df_item_rates_for_json.iloc[8,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= False
@@ -113,7 +115,7 @@ df_item_rates_for_json.iloc[10,df_item_rates_for_json.columns.get_loc('gst_rate_
 df_item_rates_for_json.iloc[11,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= False
 df_item_rates_for_json.iloc[12,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= False
 df_item_rates_for_json.iloc[13,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= d
-df_item_rates_for_json.iloc[14,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= range_rate
+#df_item_rates_for_json.iloc[14,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= range_rate
 df_item_rates_for_json.iloc[15,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= ""
 df_item_rates_for_json.iloc[16,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= ""
 df_item_rates_for_json.iloc[17,df_item_rates_for_json.columns.get_loc('gst_rate_benchmark')]= "stop"
