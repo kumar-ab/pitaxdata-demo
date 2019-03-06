@@ -1,13 +1,13 @@
 """
 This script prepares the cross-section sample for 2017. For now, we treat this
-sample as being representative (even though it may not be). 
+sample as being representative (even though it may not be).
 
 We assume that aggregate totals have already been calcuated for the full data.
 They must be saved in some form, and we will store them in agg_results.
 
 For now, we produce the sample weight for the entire sample. A subsequent
 improvement should produce aggregate results by industry/sector, and produce
-weights by industry/sector. 
+weights by industry/sector.
 
 We may also want to consider weight adjustments to target other results, such
 as totals for other measures and the distribution of firm sizes.
@@ -43,10 +43,10 @@ loss_lag2 = np.zeros(len(data_full))
 loss_lag1 = np.zeros(len(data_full))
 
 def get_loss_type(year, lagnum, losstype):
-    
+
     Returns an array of the given loss type with the appropriate lag from the
     given year.
-    
+
     loss = np.zeros(len(data_full))
     lagyear = year - lagnum
     if lagyear < 2007:
@@ -168,7 +168,7 @@ for losstype in losstypelist:
     loss_lag6 += get_loss_type(2013, 6, losstype)
     loss_lag7 += get_loss_type(2013, 7, losstype)
     loss_lag8 += get_loss_type(2013, 8, losstype)
-    
+
 
 def calc_new_lags(dat):
     """
@@ -327,12 +327,29 @@ total_returns = 790443.0
 #WGT2017 = total_returns / count
 WGT2017 = 3954771854602 / sum(data_full['AGGREGATE_LIABILTY'])
 # Assume 10% growth rate in number of firms filing
+firms_filing_growth_rate = 1.1
+"""
 weights_df = pd.DataFrame({'WT2017': [WGT2017] * count,
-                           'WT2018': [WGT2017 * 1.1] * count,
-                           'WT2019': [WGT2017 * 1.1**2] * count,
-                           'WT2020': [WGT2017 * 1.1**3] * count,
-                           'WT2021': [WGT2017 * 1.1**4] * count})
-
+                           'WT2018': [WGT2017 * firms_filing_growth_rate] * count,
+                           'WT2019': [WGT2017 * firms_filing_growth_rate**2] * count,
+                           'WT2020': [WGT2017 * firms_filing_growth_rate**3] * count,
+                           'WT2021': [WGT2017 * firms_filing_growth_rate**4] * count})
+"""
+weights_df = pd.DataFrame({'WT2017': [WGT2017] * count})
+weights_df['WT2018'] = weights_df['WT2017'] * firms_filing_growth_rate
+weights_df['WT2019'] = weights_df['WT2017'] * firms_filing_growth_rate**2
+weights_df['WT2020'] = weights_df['WT2017'] * firms_filing_growth_rate**3
+weights_df['WT2021'] = weights_df['WT2017'] * firms_filing_growth_rate**4
+weights_df['WT2022'] = weights_df['WT2017'] * firms_filing_growth_rate**5
+weights_df['WT2023'] = weights_df['WT2017'] * firms_filing_growth_rate**6
+"""
+                           'WT2018': [WT2017 * firms_filing_growth_rate] * count,
+                           'WT2019': [WT2018 * firms_filing_growth_rate] * count,
+                           'WT2020': [WT2019 * firms_filing_growth_rate] * count,
+                           'WT2021': [WT2020 * firms_filing_growth_rate] * count,
+                           'WT2022': [WT2021 * firms_filing_growth_rate] * count,
+                           'WT2023': [WT2022 * firms_filing_growth_rate] * count})
+"""
 # Export results
 data17.round(6)
 data17.to_csv('cit_cross.csv', index=False)
