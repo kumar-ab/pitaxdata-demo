@@ -396,11 +396,15 @@ for var in varlist:
     # Store empty lists in blowup_results
     blowup_results[var] = []
     agg_results3[var] = sum(datasets[4][var]) / count[4] * gfactors.loc[2017, var]
-    for year in range(2017, 2022):
+    for year in range(2017, 2024):
         if match_gfactors:
             # Apply growth factor to aggregate results and use given year
-            agg_results3[var] *= gfactors.loc[year, var]
-            sample_results[var] = 1.0 * sum(datasets[year-2017][var]) / count[year-2017]
+            if (year<=2021):
+                agg_results3[var] *= gfactors.loc[year, var]
+                sample_results[var] = 1.0 * sum(datasets[year-2017][var]) / count[year-2017]
+            else:
+            # Use the 2017 data only
+                sample_results[var] = 1.0 * sum(datasets[4][var]) / count[4]                
         else:
             # Use the 2013 data only
             sample_results[var] = 1.0 * sum(datasets[0][var]) / count[0]
@@ -410,11 +414,15 @@ for var in varlist:
             blowup_results[var].append(1.0)
 agg_results3['INVESTMENT'] = sum(datasets[4]['PADDTNS_180_DAYS__MOR_PY_15P'] + datasets[4]['PADDTNS_LESS_180_DAYS_15P']) / count[4] * gfactors.loc[2017, var]
 blowup_results['INVESTMENT'] = []
-for year in range(2017, 2022):
+for year in range(2017, 2024):
     if match_gfactors:
         # Apply growth factor to aggregate results and use given year
-        agg_results3['INVESTMENT'] *= gfactors.loc[year, 'INVESTMENT']
-        sample_results['INVESTMENT'] = 1.0 * sum(datasets[year-2017]['PADDTNS_180_DAYS__MOR_PY_15P'] + datasets[year-2017]['PADDTNS_LESS_180_DAYS_15P']) / count[year-2017]
+        if (year<=2021):
+            agg_results3['INVESTMENT'] *= gfactors.loc[year, 'INVESTMENT']
+            sample_results['INVESTMENT'] = 1.0 * sum(datasets[year-2017]['PADDTNS_180_DAYS__MOR_PY_15P'] + datasets[year-2017]['PADDTNS_LESS_180_DAYS_15P']) / count[year-2017]
+        else:
+            # Use the 2017 data only
+            sample_results['INVESTMENT'] = 1.0 * sum(datasets[4]['PADDTNS_180_DAYS__MOR_PY_15P'] + datasets[4]['PADDTNS_LESS_180_DAYS_15P']) / count[4]
     else:
         # Use the 2013 data only
         sample_results['INVESTMENT'] = 1.0 * sum(datasets[0]['PADDTNS_180_DAYS__MOR_PY_15P'] + datasets[0]['PADDTNS_LESS_180_DAYS_15P']) / count[0]
@@ -437,7 +445,7 @@ weights_df = pd.DataFrame({'WT2017': [] * count,
 
 blowup_df = pd.DataFrame.from_dict(blowup_results)
 blowup_df.round(6)
-blowup_df['YEAR'] = range(2017, 2022)
+blowup_df['YEAR'] = range(2017, 2024)
 blowup_df.set_index('YEAR', inplace=True)
 blowup_df.to_csv('cit_panel_blowup.csv')
 
