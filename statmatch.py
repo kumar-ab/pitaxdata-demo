@@ -50,11 +50,11 @@ def match(donor, recipient, donor_id, recipient_id,
         _recipient = recipient[recipient[cell_id] == cid]
         _donor = _donor.sort_values(yhat, kind="mergesort")
         _recipient = _recipient.sort_values(yhat, kind="mergesort")
-        
+
         # convert to list of dictionaries
         _donor = _donor.to_dict("records")
         _recipient = _recipient.to_dict("records")
-        
+
         j = 0
         bwt = _donor[j][donor_wt]
         count = len(_donor) - 1
@@ -78,7 +78,7 @@ def match(donor, recipient, donor_id, recipient_id,
                         j += 1
                         bwt = _donor[j][donor_wt]
 
-    match = pd.DataFrame({"donor_seq": donor_list,
-                          "recipient_seq": recipient_list,
+    match = pd.DataFrame({donor_id: donor_list,
+                          recipient_id: recipient_list,
                           "cwt": cwt_list})
     return match
