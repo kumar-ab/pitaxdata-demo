@@ -1,9 +1,13 @@
-Demonstration repository for Personal Income Tax (PIT) data preparation work
-============================================================================
+Data Preparation Repository for Tax Microsimulation Model for India
+===================================================================
 
-This repository will be used in the World-Bank-sponsored training
-sessions beginning on 2018-09-24 in New Delhi at the Ministry of
-Finance.  The training sessions will extend through January 2019.
+This repository was established for the World-Bank-sponsored training
+sessions that began during September 2018 in New Delhi at the Tax
+Policy Research Unit (TPRU) in the Ministry of Finance.  The training
+sessions extended through June 2019.  This repository, which is called
+`taxdata` and is owned by the GitHub organizaton called `TPRU-India`,
+is now managed by TPRU.
 
-The data files produced here will be suitable for use in a microsimulation
-tax model.
+The data files produced here are suitable for use in a tax
+microsimulation model for India, which is located in the `taxcalc`
+repository of the GitHub organizaton called `TPRU-India`.
