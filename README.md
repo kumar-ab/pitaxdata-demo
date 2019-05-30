@@ -1,5 +1,5 @@
-Data Preparation Repository for Tax Microsimulation Model for India
-===================================================================
+Data Preparation for Tax Microsimulation Model for India
+========================================================
 
 This repository was established for the World-Bank-sponsored training
 sessions that began during September 2018 in New Delhi at the Tax
