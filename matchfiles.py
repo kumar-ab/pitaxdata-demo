@@ -3,18 +3,16 @@ import numpy as np
 from statmatch import counts, reg, predict, match
 
 
-def matchfiles(verbose=False):
+def matchfiles(income_data, verbose=False):
     """
     Run all statistical matching logic
     """
-    income_file = "36151-0002-Data.tsv"
     consumption_file = "Household Characteristics - Block 3 -  Level 2 -  68.dta"
     consumption_file2 = "Household characteristics - Block 3 - Level 3.dta"
     consumption_summary = "Summary of Consumer Expenditure - Block 12 - Level 11 - 68.dta"
 
     if verbose:
         print("Reading Data")
-    income_data = pd.read_csv(income_file, sep="\t", na_values=" ")
     if verbose:
         print("Finished Reading Income Data")
     consumption_data = pd.read_stata(consumption_file, preserve_dtypes=False)
@@ -60,7 +58,7 @@ def matchfiles(verbose=False):
     caste = np.where(consumption_data["Social_Group"] == "9", 4,
                      consumption_data["Social_Group"])
     consumption_data["caste"] = caste
-    
+
     owns_land = income_data[["FM4A", "FM4B", "FM4C"]].sum(axis=1).astype(bool)
     income_data["owns_land"] = owns_land * 1
 
@@ -85,7 +83,7 @@ def matchfiles(verbose=False):
     caste_dummy_vars = list(caste_dummies.columns)
     # remove variable representing missing caste data
     caste_dummy_vars.remove("caste_ ")
-    
+
     state_dummies = pd.get_dummies(consumption_data["State_code"],
                                    prefix="stateid")
     consumption_data[state_dummies.columns] = state_dummies
@@ -111,7 +109,7 @@ def matchfiles(verbose=False):
     # Factor for adjusting weight in each cell
     full_count["factor"] = (full_count["c_wt"] /
                             full_count["i_wt"]).astype(float)
-    
+
     # merge cell_id onto each data file
     income_data = pd.merge(income_data, full_count, how="inner",
                            on=partition_vars)
@@ -135,13 +133,13 @@ def matchfiles(verbose=False):
                        wt="Combined_multiplier")
     params = params.add_prefix("param_")
     params["cell_id"] = params.index + 1
-    
+
     income_data = pd.merge(income_data, params, how="inner",
                            on="cell_id")
     consumption_data = pd.merge(consumption_data, params,
                                 how="inner", on="cell_id")
 
-    # calculate yhate values
+    # calculate yhat values
     if verbose:
         print("Predicting Consumption")
 
@@ -155,6 +153,8 @@ def matchfiles(verbose=False):
         print("Matching Data")
     match_index = match(income_data, consumption_data,
                         "IDHH", "HHID", "wt", "wt")
+    match_index["HHID"] = match_index["HHID"].astype(int)
+    match_index["IDHH"] = match_index["IDHH"].astype(int)
     if verbose:
         print("Match Complete")
     return match_index
