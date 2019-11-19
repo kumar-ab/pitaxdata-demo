@@ -324,8 +324,10 @@ count = len(data17)
 total_returns = 790443.0
 
 # Calculate weights
-#WGT2017 = total_returns / count
-WGT2017 = 3954771854602 / sum(data_full['AGGREGATE_LIABILTY'])
+# WGT2017 = total_returns / count
+# WGT2017 = 3954771854602 / sum(data_full['AGGREGATE_LIABILTY'])
+WGT2017 = 3954771854602 / sum(data17['AGGREGATE_LIABILTY'])
+
 # Assume 10% growth rate in number of firms filing
 firms_filing_growth_rate = 1.1
 """
